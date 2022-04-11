@@ -2,7 +2,7 @@
 	answer: .quad 0
 	input: .ascii " "
 	game: .space 30, 32
-	win_msg: .ascii "Well done ! you won in _ attempt(s)\n"
+	win_msg: .ascii "Well done ! you won in _ attempts"
 .text
 	header: .ascii "\033[1mxwrdl \033[0m\033[2mv0.1 \033[0m(\033[32m\033[1mESC \033[0mto exit)\n\n"
 	loss_msg: .ascii "You lost, the word was:\n"
@@ -350,16 +350,26 @@ continue:
 won:
 	call ln
 
-	leaq win_msg(%rip), %rsi
+	xorq %r8, %r8
+	# 33 is the length of the full string (last 's' included)
+	movq $33, %rdx
+	# set %r8 to 1 if the player won in 1 attempt
+	test %r13, %r13
+	setz %r8b
+	# remove 1 char from string (the 's' of attempts) if the player won in 1 attempt.
+	subq %r8, %rdx
+
 	movq $23, %r8
 	# convert from number to string (0 is 48 in ascii, +1 because r13 is 0 based)
 	addq $49, %r13
+	leaq win_msg(%rip), %rsi
 	movb %r13b, (%rsi, %r8, 1)
 
 	movq $1, %rax
 	movq $1, %rdi
-	movq $36, %rdx
 	syscall
+
+	call ln
 
 	jmp out
 lost:
