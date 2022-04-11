@@ -1,0 +1,4 @@
+words/*
+*.o
+xwrdl
+words.s
